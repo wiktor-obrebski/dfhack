@@ -38,3 +38,103 @@ function test.getHackPath_chdir()
         expect.eq(clean_path(dfhack.getHackPath()), clean_path(fs.getcwd()))
     end)
 end
+
+function test.strict_wrap()
+    wrap = string.strict_wrap
+
+    -- simple text
+    expect.table_eq(
+        wrap([[
+this is a simple text]], 7),
+        {
+            "this ",
+            "is a ",
+            "simple ",
+            "text"
+        }
+    )
+
+    -- keep endline spaces
+    expect.table_eq(
+        wrap([[
+this is a    simple text]], 7),
+        {
+            "this ",
+            "is ",
+            "a    ",
+            "simple ",
+            "text"
+        }
+    )
+
+
+    -- keep text leading spaces
+    expect.table_eq(
+        wrap([[
+  this is a simple text]], 7),
+        {
+            "  this ",
+            "is a ",
+            "simple ",
+            "text"
+        }
+    )
+
+    -- keep text trailing spaces
+    expect.table_eq(
+        wrap([[
+this is a simple text   ]], 7),
+        {
+            "this ",
+            "is a ",
+            "simple ",
+            "text   "
+        }
+    )
+
+    -- cat words longer than max width
+    expect.table_eq(
+        wrap([[
+thiswordistoolong is a simple text]], 7),
+        {
+            "thiswor",
+            "distool",
+            "ong is ",
+            "a ",
+            "simple ",
+            "text"
+        }
+    )
+
+    -- take into account existing new line
+    expect.table_eq(
+        wrap([[
+this is a sim
+ple text]], 7),
+        {
+            "this ",
+            "is a ",
+            "sim\n",
+            "ple ",
+            "text"
+        }
+    )
+
+    -- take into account existing new lines
+    expect.table_eq(
+        wrap([[
+this is a sim
+
+
+ple text]], 7),
+        {
+            "this ",
+            "is a ",
+            "sim\n",
+            "\n",
+            "\n",
+            "ple ",
+            "text"
+        }
+    )
+end
