@@ -25,7 +25,8 @@ Supported features:
  - ctrl+u delete current line
  - ctrl+w delete last word
  - mouse text selection and replace/remove features for it
- - local copy/paste selection text or current line
+ - local copy/paste selection text or current line (ctrl+x/ctrl+c/ctrl+v)
+ - go to text begin/end by shift+up/shift+down
 --]]
 TextEditor = defclass(TextEditor, widgets.Widget)
 
@@ -365,6 +366,17 @@ function TextEditor:onInput(keys)
         local x = math.min(last_cursor_x, #self.lines[y])
         self:setCursor(x, y)
         self.last_cursor_x = last_cursor_x
+        return true
+    elseif keys.KEYBOARD_CURSOR_UP_FAST then
+        self:setCursor(1, 1)
+        return true
+    elseif keys.KEYBOARD_CURSOR_DOWN_FAST then
+        -- go to text end
+        self:ensureTrailingSpace()
+        self:setCursor(
+            #self.lines[#self.lines],
+            #self.lines
+        )
         return true
     elseif keys.CUSTOM_ALT_B or keys.KEYBOARD_CURSOR_LEFT_FAST then
         -- back one word
