@@ -691,6 +691,57 @@ function string:wrap(width, opts)
     return opts.return_as_table and wrapped_text or table.concat(wrapped_text, '\n')
 end
 
+-- similar to string:wrap, but do not skip any spaces and new lines characters
+-- it returns table of lines on the output, instead of string. such table items
+-- contacted will always generate exactly the same text like provided to the fun
+function string:strict_wrap(width)
+    width = width or 72
+    if width <= 0 then error('expected width > 0; got: '..tostring(width)) end
+    local lines = {}
+    for line in self:gmatch('[^\n]*') do
+        local line_start_pos = 1
+        local local_lines = {}
+        for start_pos, word, end_pos in string.gmatch(line, '()(%s*%S+%s*)()') do
+            if end_pos - line_start_pos <= width then
+                -- word fits within the current line
+                local curr = math.max(1, #local_lines)
+                local_lines[curr] = (local_lines[curr] or '') .. word
+            elseif #word <= width then
+                -- word needs to go on the next line, but is not itself longer
+                -- than the specified width
+                line_start_pos = start_pos
+                table.insert(local_lines, word)
+            else
+                -- word is too long to fit on one line and needs to be split up
+                local char_ind = 0
+                repeat
+                    local word_frag = word:sub(char_ind + 1, char_ind + width)
+                    table.insert(local_lines, word_frag)
+                    line_start_pos = start_pos + char_ind
+                    char_ind = char_ind + #word_frag
+                until char_ind >= #word
+            end
+        end
+
+        if #local_lines == 0 then
+            table.insert(lines, '')
+        end
+
+        for _, line in ipairs(local_lines) do
+            table.insert(lines, line)
+        end
+
+        lines[#lines] = lines[#lines] .. '\n'
+    end
+
+    if #lines > 0 then
+        last_line = lines[#lines]
+        lines[#lines] = last_line:sub(1, #last_line - 1)
+    end
+
+    return lines
+end
+
 -- Escapes regex special chars in a string. E.g. "a+b" -> "a%+b"
 local regex_chars_pattern = '(['..('%^$()[].*+-?'):gsub('(.)', '%%%1')..'])'
 ---@nodiscard
