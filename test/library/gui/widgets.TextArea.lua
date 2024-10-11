@@ -2835,4 +2835,6 @@ function test.clear_undo_redo_history()
     simulate_input_keys('CUSTOM_CTRL_Z')
 
     expect.eq(read_rendered_text(text_area), text .. 'A longer text_')
+
+    screen:dismiss()
 end
